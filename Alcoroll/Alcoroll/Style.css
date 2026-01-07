@@ -1,0 +1,101 @@
+/* ------------------
+   Alcoroll Mobile UI
+------------------- */
+
+* {
+    box-sizing: border-box;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+body {
+    margin: 0;
+    padding: 16px;
+    background-color: #121212;
+    color: #ffffff;
+    text-align: center;
+}
+
+/* ------------------
+   Headings
+------------------- */
+
+h1 {
+    font-size: 2.2rem;
+    margin-bottom: 16px;
+}
+
+h2 {
+    margin-top: 16px;
+    font-size: 1.5rem;
+}
+
+h3 {
+    margin-top: 12px;
+    font-size: 1.2rem;
+}
+
+/* ------------------
+   Buttons
+------------------- */
+
+button {
+    width: 100%;
+    padding: 16px;
+    margin: 8px 0;
+    font-size: 1.2rem;
+    font-weight: bold;
+    border: none;
+    border-radius: 12px;
+    background: #ff9800;
+    color: #000;
+    cursor: pointer;
+}
+
+button:active {
+    transform: scale(0.98);
+}
+
+/* Mode buttons side by side */
+#mode-select {
+    display: flex;
+    gap: 12px;
+}
+
+#mode-select button {
+    flex: 1;
+}
+
+/* ------------------
+   Sections
+------------------- */
+
+#instructions,
+#output {
+    background: #1e1e1e;
+    border-radius: 12px;
+    padding: 16px;
+    margin-top: 16px;
+}
+
+/* ------------------
+   Dice Display
+------------------- */
+
+p {
+    font-size: 1.1rem;
+    margin: 8px 0;
+}
+
+hr {
+    border: none;
+    border-top: 1px solid #333;
+    margin: 16px 0;
+}
+
+/* ------------------
+   Emphasis
+------------------- */
+
+strong {
+    color: #ffcc80;
+}
