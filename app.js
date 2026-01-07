@@ -1,11 +1,11 @@
 /*
   Alcoroll - Game Logic
-  Beginner-safe, mode-based structure
+  Normal + Count-Dice Mode
 */
 
 let currentMode = null;
 
-/* ------------------ Utilities ------------------ */
+/* ---------- Utilities ---------- */
 
 function rollDie(sides) {
     return Math.floor(Math.random() * sides) + 1;
@@ -20,99 +20,145 @@ function roll4d6() {
     ];
 }
 
-/* ------------------ Mode Selection ------------------ */
+/* ---------- Mode Selection ---------- */
 
 function setMode(mode) {
     currentMode = mode;
 
-    const instructions = document.getElementById("instructions");
-    const output = document.getElementById("output");
-
-    output.innerHTML = "";
+    document.getElementById("output").innerHTML = "";
+    document.getElementById("instructions").innerHTML = "";
 
     if (mode === "normal") {
-        instructions.innerHTML = `
+        document.getElementById("instructions").innerHTML = `
             <h2>🎲 Normal Game</h2>
-            <p>
-                Every player rolls the dice and solves the maths.<br>
-                The slowest player takes a shot 🍺
-            </p>
-            <p>
-                Roll order:<br>
-                4d6 → 1d4 → 4d6
-            </p>
+            <p>Roll: 4d6 → 1d4 → 4d6</p>
+            <p>Solve the maths.</p>
+            <p><strong>Slowest player drinks 🍺</strong></p>
         `;
     }
 
     if (mode === "count") {
-        instructions.innerHTML = `
+        resetCountDice();
+        document.getElementById("instructions").innerHTML = `
             <h2>🧮 Count-Dice</h2>
-            <p>
-                Dice are rolled one at a time to build an equation.<br>
-                Players have one minute to get closest to the target.
-            </p>
-            <p>
-                (Coming next!)
-            </p>
+            <p>Dice roll one at a time to build an equation.</p>
+            <p>Everyone has <strong>60 seconds</strong>.</p>
+            <p><strong>Closest answer wins.</strong></p>
         `;
     }
 }
 
-/* ------------------ Main Roll Button ------------------ */
+/* ---------- Roll Button ---------- */
 
 function doRoll() {
     if (!currentMode) {
-        alert("Please select a game mode first!");
+        alert("Select a game mode first!");
         return;
     }
 
-    if (currentMode === "normal") {
-        playNormalGame();
-    }
-
-    if (currentMode === "count") {
-        playCountDice();
-    }
+    if (currentMode === "normal") playNormalGame();
+    if (currentMode === "count") rollNextCountDie();
 }
 
-/* ------------------ Normal Game ------------------ */
+/* ---------- Normal Game ---------- */
 
 function playNormalGame() {
-    const firstRoll = roll4d6();
-    const d4 = rollDie(4);
-    const secondRoll = roll4d6();
+    const a = roll4d6();
+    const b = rollDie(4);
+    const c = roll4d6();
 
-    const firstTotal = firstRoll.reduce((a, b) => a + b, 0);
-    const secondTotal = secondRoll.reduce((a, b) => a + b, 0);
+    const totalA = a.reduce((x, y) => x + y, 0);
+    const totalC = c.reduce((x, y) => x + y, 0);
 
-    const output = document.getElementById("output");
+    document.getElementById("output").innerHTML = `
+        <h2>🎲 Dice</h2>
+        <p>${a.join(" + ")} = ${totalA}</p>
+        <p>1d4 = ${b}</p>
+        <p>${c.join(" + ")} = ${totalC}</p>
 
-    output.innerHTML = `
-        <h2>🎲 Dice Rolls</h2>
+        <h3>🧠 Solve:</h3>
+        <p>(${totalA} + ${totalC}) × ${b}</p>
 
-        <p><strong>First 4d6:</strong> ${firstRoll.join(" + ")} = ${firstTotal}</p>
-        <p><strong>1d4:</strong> ${d4}</p>
-        <p><strong>Second 4d6:</strong> ${secondRoll.join(" + ")} = ${secondTotal}</p>
-
-        <hr>
-
-        <h3>🧠 Solve this:</h3>
-        <p>
-            (${firstTotal} + ${secondTotal}) × ${d4}
-        </p>
-
-        <p><strong>Slowest player takes a shot 🍺</strong></p>
+        <p><strong>Slowest drinks 🍺</strong></p>
     `;
 }
 
-/* ------------------ Count-Dice (placeholder) ------------------ */
+/* =========================================================
+   COUNT-DICE MODE
+========================================================= */
 
-function playCountDice() {
-    const output = document.getElementById("output");
+let countDiceRolls = [];
+let countOperators = ["+", "×", "+", "+"]; // structure
+let countTarget = null;
+let rollIndex = 0;
+let countdownTimer = null;
 
-    output.innerHTML = `
+/* Reset game */
+function resetCountDice() {
+    countDiceRolls = [];
+    rollIndex = 0;
+    countTarget = Math.floor(Math.random() * 40) + 20; // 20–60
+
+    clearInterval(countdownTimer);
+
+    document.getElementById("output").innerHTML = `
         <h2>🧮 Count-Dice</h2>
-        <p>This mode is wired up and ready.</p>
-        <p>We’ll add sequential dice and timers next.</p>
+        <p><strong>🎯 Target:</strong> ${countTarget}</p>
+        <p>Tap <strong>Roll Dice</strong> to begin.</p>
     `;
+}
+
+/* Roll next die */
+function rollNextCountDie() {
+    if (rollIndex >= 4) return;
+
+    const dieType = rollIndex === 1 ? 4 : 6;
+    const roll = rollDie(dieType);
+    countDiceRolls.push(roll);
+    rollIndex++;
+
+    updateCountDiceDisplay();
+
+    if (rollIndex === 4) startCountdown();
+}
+
+/* Update display */
+function updateCountDiceDisplay() {
+    let expression = "";
+
+    for (let i = 0; i < countDiceRolls.length; i++) {
+        expression += countDiceRolls[i];
+        if (i < countOperators.length) {
+            expression += " " + countOperators[i] + " ";
+        }
+    }
+
+    document.getElementById("output").innerHTML = `
+        <h2>🧮 Count-Dice</h2>
+        <p><strong>🎯 Target:</strong> ${countTarget}</p>
+        <h3>${expression}</h3>
+        <p>Roll ${4 - rollIndex} dice remaining</p>
+    `;
+}
+
+/* Start 60s timer */
+function startCountdown() {
+    let timeLeft = 60;
+
+    countdownTimer = setInterval(() => {
+        timeLeft--;
+
+        document.getElementById("output").innerHTML += `
+            <p>⏱ Time left: ${timeLeft}s</p>
+        `;
+
+        if (timeLeft <= 0) {
+            clearInterval(countdownTimer);
+            document.getElementById("output").innerHTML += `
+                <h3>⏱ Time’s up!</h3>
+                <p>Closest answer wins.</p>
+                <p><strong>Losers drink 🍺</strong></p>
+            `;
+        }
+    }, 1000);
 }
