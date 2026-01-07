@@ -1,48 +1,54 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Alcoroll: TEST DEV</title>
 
-    <title>Alcoroll: TEST DEV</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#1e1e1e">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
 
-    <!-- PWA -->
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#1e1e1e">
-
-    <!-- iOS support -->
-    <link rel="apple-touch-icon" href="icons/icon-192.png">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-
-    <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
 
-    <h1>🍻 Alcoroll</h1>
+<h1>🍻 Alcoroll</h1>
 
-<div id="mode-select">
-    <button onclick="setMode('normal')">Normal Game</button>
-    <button onclick="setMode('count')">Count-Dice</button>
+<div id="mode-select" class="mode-container">
+  <div class="mode-card" onclick="setMode('normal')">
+    <h2>🎲 Normal Game</h2>
+    <p>Roll → Solve → Slowest drinks</p>
+  </div>
+
+  <div class="mode-card" onclick="setMode('count')">
+    <h2>⏱️ Count-Dice</h2>
+    <p>Closest answer wins</p>
+  </div>
 </div>
 
 <hr>
 
 <div id="instructions">
-    <p>Select a game mode to begin.</p>
+  <p>Select a game mode to begin.</p>
 </div>
 
 <div id="controls">
-    <button onclick="doRoll()">Roll Dice</button>
+  <button onclick="doRoll()">Roll Dice</button>
 </div>
 
-<div id="output"></div>
+<div id="dice-tray">
+  <div id="output"></div>
+</div>
 
-    <script src="app.js"></script>
+<script src="app.js"></script>
 
-    <script>
-        if ("serviceWorker" in navigator) {
-            navigator.serviceWorker.register("service-worker.js");
-        }
-    </script>
+<script>
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("service-worker.js");
+  }
+</script>
+
 </body>
 </html>
