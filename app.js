@@ -7,6 +7,16 @@ let currentMode = null;
 
 /* ---------- Utilities ---------- */
 
+function triggerDiceShake() {
+    const tray = document.getElementById("dice-tray");
+    if (!tray) return;
+
+    tray.classList.remove("shake"); // reset
+    void tray.offsetWidth;          // force reflow
+    tray.classList.add("shake");
+}
+
+
 function rollDie(sides) {
     return Math.floor(Math.random() * sides) + 1;
 }
@@ -48,6 +58,10 @@ function setMode(mode) {
     }
 }
 
+
+
+
+
 /* ---------- Roll Button ---------- */
 
 function doRoll() {
@@ -55,6 +69,8 @@ function doRoll() {
         alert("Select a game mode first!");
         return;
     }
+
+    triggerDiceShake();
 
     if (currentMode === "normal") playNormalGame();
     if (currentMode === "count") rollNextCountDie();
