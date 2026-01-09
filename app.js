@@ -58,18 +58,19 @@ function setMode(mode) {
     }
 
     if (mode === "numboard") {
-        numboardDice = [];
-        numboardTarget = Math.floor(Math.random() * 60) + 30;
+    numboardDice = [];
+    numboardOperators = [];
+    numboardTarget = Math.floor(Math.random() * 60) + 30;
 
-        document.getElementById("instructions").innerHTML = `
-            <h2>🧩 Numboard</h2>
-            <p><strong>🎯 Target:</strong> ${numboardTarget}</p>
-            <p>Add/remove dice and choose operators.</p>
-            <p><strong>Closest wins.</strong></p>
-        `;
+    document.getElementById("instructions").innerHTML = `
+        <h2>🧩 Numboard</h2>
+        <p><strong>🎯 Target:</strong> ${numboardTarget}</p>
+        <p>Add/remove dice and choose operators.</p>
+        <p><strong>Closest wins.</strong></p>
+    `;
 
-        renderNumboard();
-    }
+    renderNumboard();
+}
 }
 
 
@@ -292,6 +293,7 @@ function startCountdown() {
         }
     }, 1000);
 }
+
 
 
 
