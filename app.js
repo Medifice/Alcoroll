@@ -106,51 +106,44 @@ function playNormalGame() {
 let numboardDice = [];
 let numboardTarget = null;
 
-if (mode === "numboard") {
-    numboardDice = [];
-    numboardTarget = Math.floor(Math.random() * 60) + 30;
+function setMode(mode) {
+    currentMode = mode;
 
-    document.getElementById("instructions").innerHTML = `
-        <h2>🧩 Numboard</h2>
-        <p><strong>🎯 Target:</strong> ${numboardTarget}</p>
-        <p>Add/remove dice and choose operators.</p>
-        <p><strong>Closest wins.</strong></p>
-    `;
+    document.getElementById("output").innerHTML = "";
+    document.getElementById("instructions").innerHTML = "";
 
-    renderNumboard();
-}
+    if (mode === "normal") {
+        document.getElementById("instructions").innerHTML = `
+            <h2>🎲 Normal Game</h2>
+            <p>Roll: 4d6 → 1d4 → 4d6</p>
+            <p>Solve the maths.</p>
+            <p><strong>Slowest player drinks 🍺</strong></p>
+        `;
+    }
 
-function renderNumboard() {
-    const diceDisplay = numboardDice.length
-        ? numboardDice.join(" ")
-        : "No dice added";
+    if (mode === "count") {
+        resetCountDice();
+        document.getElementById("instructions").innerHTML = `
+            <h2>🧮 Count-Dice</h2>
+            <p>Dice roll one at a time to build an equation.</p>
+            <p>Everyone has <strong>60 seconds</strong>.</p>
+            <p><strong>Closest answer wins.</strong></p>
+        `;
+    }
 
-    document.getElementById("output").innerHTML = `
-        <h3>🧮 Dice</h3>
-        <p>${diceDisplay}</p>
+    if (mode === "numboard") {
+        numboardDice = [];
+        numboardTarget = Math.floor(Math.random() * 60) + 30;
 
-        <button onclick="addNumboardDie(6)">➕ Add d6</button>
-        <button onclick="addNumboardDie(4)">➕ Add d4</button>
-        <button onclick="removeNumboardDie()">➖ Remove Die</button>
+        document.getElementById("instructions").innerHTML = `
+            <h2>🧩 Numboard</h2>
+            <p><strong>🎯 Target:</strong> ${numboardTarget}</p>
+            <p>Add/remove dice and choose operators.</p>
+            <p><strong>Closest wins.</strong></p>
+        `;
 
-        <h3>Operators</h3>
-        <p>+ − × ÷ (free choice)</p>
-
-        <p>Build your equation!</p>
-    `;
-}
-
-function addNumboardDie(sides) {
-    if (numboardDice.length >= 6) return;
-    numboardDice.push(rollDie(sides));
-    triggerDiceShake();
-    renderNumboard();
-}
-
-function removeNumboardDie() {
-    if (numboardDice.length === 0) return;
-    numboardDice.pop();
-    renderNumboard();
+        renderNumboard();
+    }
 }
 
 
@@ -233,4 +226,5 @@ function startCountdown() {
         }
     }, 1000);
 }
+
 
