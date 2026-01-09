@@ -202,9 +202,10 @@ function evaluateNumboard() {
     for (let i = 0; i < numboardDice.length; i++) {
         expr += numboardDice[i];
         if (i < numboardOperators.length) {
-            expr += numboardOperators[i]
-                .replace("×", "*")
-                .replace("÷", "/");
+expr += numboardOperators[i]
+    .replace("×", "*")
+    .replace("÷", "/")
+    .replace("-", "-");
         }
     }
 
@@ -294,6 +295,7 @@ function startCountdown() {
         }
     }, 1000);
 }
+
 
 
 
