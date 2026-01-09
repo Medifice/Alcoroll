@@ -100,6 +100,61 @@ function playNormalGame() {
 }
 
 /* =========================================================
+   NUMBOARD MODE
+========================================================= */
+
+let numboardDice = [];
+let numboardTarget = null;
+
+if (mode === "numboard") {
+    numboardDice = [];
+    numboardTarget = Math.floor(Math.random() * 60) + 30;
+
+    document.getElementById("instructions").innerHTML = `
+        <h2>🧩 Numboard</h2>
+        <p><strong>🎯 Target:</strong> ${numboardTarget}</p>
+        <p>Add/remove dice and choose operators.</p>
+        <p><strong>Closest wins.</strong></p>
+    `;
+
+    renderNumboard();
+}
+
+function renderNumboard() {
+    const diceDisplay = numboardDice.length
+        ? numboardDice.join(" ")
+        : "No dice added";
+
+    document.getElementById("output").innerHTML = `
+        <h3>🧮 Dice</h3>
+        <p>${diceDisplay}</p>
+
+        <button onclick="addNumboardDie(6)">➕ Add d6</button>
+        <button onclick="addNumboardDie(4)">➕ Add d4</button>
+        <button onclick="removeNumboardDie()">➖ Remove Die</button>
+
+        <h3>Operators</h3>
+        <p>+ − × ÷ (free choice)</p>
+
+        <p>Build your equation!</p>
+    `;
+}
+
+function addNumboardDie(sides) {
+    if (numboardDice.length >= 6) return;
+    numboardDice.push(rollDie(sides));
+    triggerDiceShake();
+    renderNumboard();
+}
+
+function removeNumboardDie() {
+    if (numboardDice.length === 0) return;
+    numboardDice.pop();
+    renderNumboard();
+}
+
+
+/* =========================================================
    COUNT-DICE MODE
 ========================================================= */
 
@@ -178,3 +233,4 @@ function startCountdown() {
         }
     }, 1000);
 }
+
