@@ -85,12 +85,12 @@ function doRoll() {
         return;
     }
 
+    if (currentMode === "numboard") return;
+
     triggerDiceShake();
 
     if (currentMode === "normal") playNormalGame();
     if (currentMode === "count") rollNextCountDie();
-    if (currentMode === "numboard") addNumboardDie(6);
-
 }
 
 /* ---------- Normal Game ---------- */
@@ -294,6 +294,7 @@ function startCountdown() {
         }
     }, 1000);
 }
+
 
 
 
