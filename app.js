@@ -88,6 +88,8 @@ function doRoll() {
 
     if (currentMode === "normal") playNormalGame();
     if (currentMode === "count") rollNextCountDie();
+    if (currentMode === "numboard") addNumboardDie(6);
+
 }
 
 /* ---------- Normal Game ---------- */
@@ -237,6 +239,7 @@ function startCountdown() {
         }
     }, 1000);
 }
+
 
 
 
