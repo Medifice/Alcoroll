@@ -121,26 +121,39 @@ function playNormalGame() {
 
 let numboardDice = [];
 let numboardTarget = null;
+onst AVAILABLE_OPERATORS = ["+", "−", "×", "÷"];
+
 
 /* Render Numboard UI */
 function renderNumboard() {
-    const diceDisplay = numboardDice.length
-        ? numboardDice.join(" ")
-        : "No dice added";
+    let equationHTML = "";
+
+    for (let i = 0; i < numboardDice.length; i++) {
+        equationHTML += `<span class="num">${numboardDice[i]}</span>`;
+
+        if (i < numboardOperators.length) {
+            const op = numboardOperators[i] ?? "?";
+            equationHTML += `
+                <span class="op" onclick="cycleOperator(${i})">
+                    ${op}
+                </span>
+            `;
+        }
+    }
 
     document.getElementById("output").innerHTML = `
-        <h3>🧮 Dice</h3>
-        <p>${diceDisplay}</p>
+        <h3>🧩 Numboard</h3>
+
+        <div class="equation">
+            ${equationHTML || "Add dice to begin"}
+        </div>
 
         <button onclick="addNumboardDie(6)">➕ Add d6</button>
         <button onclick="addNumboardDie(4)">➕ Add d4</button>
         <button onclick="removeNumboardDie()">➖ Remove Die</button>
 
-        <h3>Operators</h3>
-        <p>+ − × ÷ (free choice)</p>
-
         <p>🎯 Target: <strong>${numboardTarget}</strong></p>
-        <p>Build your equation!</p>
+        <p>Tap operators to change them</p>
     `;
 }
 
@@ -149,6 +162,12 @@ function addNumboardDie(sides) {
     if (numboardDice.length >= 6) return;
 
     numboardDice.push(rollDie(sides));
+
+    // add empty operator slot if needed
+    if (numboardDice.length > 1) {
+        numboardOperators.push(null);
+    }
+
     triggerDiceShake();
     renderNumboard();
 }
@@ -158,8 +177,42 @@ function removeNumboardDie() {
     if (numboardDice.length === 0) return;
 
     numboardDice.pop();
+    numboardOperators.pop(); // safe even if empty
+
     renderNumboard();
 }
+
+function cycleOperator(index) {
+    const current = numboardOperators[index];
+    const nextIndex = current
+        ? (AVAILABLE_OPERATORS.indexOf(current) + 1) % AVAILABLE_OPERATORS.length
+        : 0;
+
+    numboardOperators[index] = AVAILABLE_OPERATORS[nextIndex];
+    renderNumboard();
+}
+
+function evaluateNumboard() {
+    if (numboardOperators.includes(null)) return null;
+
+    let expr = "";
+
+    for (let i = 0; i < numboardDice.length; i++) {
+        expr += numboardDice[i];
+        if (i < numboardOperators.length) {
+            expr += numboardOperators[i]
+                .replace("×", "*")
+                .replace("÷", "/");
+        }
+    }
+
+    try {
+        return Math.round(eval(expr));
+    } catch {
+        return null;
+    }
+}
+
 /* =========================================================
    COUNT-DICE MODE
 ========================================================= */
@@ -239,6 +292,7 @@ function startCountdown() {
         }
     }, 1000);
 }
+
 
 
 
