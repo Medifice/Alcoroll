@@ -121,8 +121,9 @@ function playNormalGame() {
 ========================================================= */
 
 let numboardDice = [];
+let numboardOperators = [];
 let numboardTarget = null;
-onst AVAILABLE_OPERATORS = ["+", "−", "×", "÷"];
+const AVAILABLE_OPERATORS = ["+", "−", "×", "÷"];
 
 
 /* Render Numboard UI */
@@ -293,6 +294,7 @@ function startCountdown() {
         }
     }, 1000);
 }
+
 
 
 
