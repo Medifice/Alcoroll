@@ -130,6 +130,8 @@ const AVAILABLE_OPERATORS = ["+", "-", "×", "÷"];
 function renderNumboard() {
     let equationHTML = "";
 
+<button onclick="addNumboardDie(6)">🎲 Roll First Die</button>
+  
     for (let i = 0; i < numboardDice.length; i++) {
         equationHTML += `<span class="num">${numboardDice[i]}</span>`;
 
@@ -295,6 +297,7 @@ function startCountdown() {
         }
     }, 1000);
 }
+
 
 
 
