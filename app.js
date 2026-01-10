@@ -3,6 +3,12 @@
   Normal + Count-Dice Mode
 */
 
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.getRegistrations().then(regs => {
+        regs.forEach(reg => reg.unregister());
+    });
+}
+
 let currentMode = null;
 
 /* ---------- Utilities ---------- */
@@ -297,6 +303,7 @@ function startCountdown() {
         }
     }, 1000);
 }
+
 
 
 
