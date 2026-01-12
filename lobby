@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Alcoroll – Game Lobby</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <link rel="stylesheet" href="lobby.css" />
+</head>
+<body>
+
+    <!-- MAIN LOBBY CONTAINER -->
+    <div id="lobby-container">
+
+        <!-- GAME CODE DISPLAY -->
+        <div id="room-code">
+            <span class="label">Game Code</span>
+            <span class="code">ABCD</span>
+        </div>
+
+        <!-- PLAYER LIST -->
+        <div id="players-panel">
+            <h2>Players</h2>
+
+            <ul id="player-list">
+                <!-- Injected dynamically -->
+                <!-- Example:
+                <li class="player host">
+                    Sam <span class="host-badge">HOST</span>
+                </li>
+                -->
+            </ul>
+        </div>
+
+        <!-- NAME ENTRY (only shown if name not set) -->
+        <div id="name-entry">
+            <input 
+                type="text" 
+                id="player-name-input" 
+                maxlength="16" 
+                placeholder="Enter your name"
+            />
+            <button id="confirm-name-btn">Join Game</button>
+        </div>
+
+        <!-- HOST CONTROLS -->
+        <div id="host-controls" class="hidden">
+
+            <h2>Game Mode</h2>
+
+            <div id="mode-select">
+                <button data-mode="normal">Normal</button>
+                <button data-mode="countdice">Count Dice</button>
+                <button data-mode="numboard">Numboard</button>
+            </div>
+
+            <button id="start-game-btn" class="primary">
+                Start Game
+            </button>
+
+        </div>
+
+        <!-- LOBBY STATUS -->
+        <div id="lobby-status">
+            Waiting for host to start the game...
+        </div>
+
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="lobby.js"></script>
+</body>
+</html>
