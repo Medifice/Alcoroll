@@ -34,6 +34,21 @@ function roll4d6() {
     ];
 }
 
+const COUNT_OPERATORS_POOL = ["+", "+", "+", "×", "-", "÷"]; 
+// weighted: more +, fewer ÷
+
+function generateCountOperators(count) {
+    const ops = [];
+    for (let i = 0; i < count; i++) {
+        ops.push(
+            COUNT_OPERATORS_POOL[
+                Math.floor(Math.random() * COUNT_OPERATORS_POOL.length)
+            ]
+        );
+    }
+    return ops;
+}
+
 /* ---------- Mode Selection ---------- */
 
 function setMode(mode) {
@@ -313,7 +328,8 @@ let countdownTimer = null;
 function resetCountDice() {
     countDiceRolls = [];
     rollIndex = 0;
-    countTarget = Math.floor(Math.random() * 40) + 20; // 20–60
+    countTarget = Math.floor(Math.random() * 40) + 20;
+    countOperators = generateCountOperators(3); // 4 dice → 3 operators
 
     clearInterval(countdownTimer);
 
@@ -340,20 +356,29 @@ function rollNextCountDie() {
 
 /* Update display */
 function updateCountDiceDisplay() {
-    let expression = "";
+    let expressionHTML = "";
 
     for (let i = 0; i < countDiceRolls.length; i++) {
-        expression += countDiceRolls[i];
-        if (i < countOperators.length) {
-            expression += " " + countOperators[i] + " ";
+        expressionHTML += `<span class="count-num">${countDiceRolls[i]}</span>`;
+
+        if (i < countOperators.length && i < countDiceRolls.length - 1) {
+            expressionHTML += `
+                <span class="count-op">
+                    ${countOperators[i]}
+                </span>
+            `;
         }
     }
 
     document.getElementById("output").innerHTML = `
         <h2>🧮 Count-Dice</h2>
         <p><strong>🎯 Target:</strong> ${countTarget}</p>
-        <h3>${expression}</h3>
-        <p>Roll ${4 - rollIndex} dice remaining</p>
+
+        <div class="count-equation">
+            ${expressionHTML}
+        </div>
+
+        <p>🎲 Rolls remaining: ${4 - rollIndex}</p>
     `;
 }
 
@@ -378,6 +403,7 @@ function startCountdown() {
         }
     }, 1000);
 }
+
 
 
 
