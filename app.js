@@ -4,6 +4,10 @@
 */
 
 let currentMode = null;
+let gamePhase = "idle";
+let roundTimer = null;
+let timeLeft = 0;
+
 
 /* ---------- Utilities ---------- */
 
@@ -57,23 +61,41 @@ function setMode(mode) {
         `;
     }
 
-    if (mode === "numboard") {
-    numboardDice = [];
-    numboardOperators = [];
-    numboardTarget = Math.floor(Math.random() * 60) + 30;
-
+if (mode === "numboard") {
     document.getElementById("instructions").innerHTML = `
         <h2>🧩 Numboard</h2>
-        <p><strong>🎯 Target:</strong> ${numboardTarget}</p>
-        <p>Add/remove dice and choose operators.</p>
-        <p><strong>Closest wins.</strong></p>
+        <p>Build an equation closest to the target.</p>
+        <p><strong>Closest wins 🍻</strong></p>
     `;
 
-    renderNumboard();
+    startNumboardRound();
 }
 }
 
+/* ------- Countdown Logic ---------*/
 
+function startPhaseTimer(seconds, onEnd) {
+    clearInterval(roundTimer);
+    timeLeft = seconds;
+
+    roundTimer = setInterval(() => {
+        timeLeft--;
+
+        updateTimerDisplay();
+
+        if (timeLeft <= 0) {
+            clearInterval(roundTimer);
+            onEnd();
+        }
+    }, 1000);
+}
+
+function updateTimerDisplay() {
+    const timer = document.getElementById("timer");
+    if (!timer) return;
+
+    timer.textContent = `⏱ ${timeLeft}s`;
+}
 
 
 
@@ -123,51 +145,109 @@ function playNormalGame() {
 let numboardDice = [];
 let numboardOperators = [];
 let numboardTarget = null;
+
 const AVAILABLE_OPERATORS = ["+", "-", "×", "÷"];
 
+/* ---------- Numboard Phase Flow ---------- */
 
-/* Render Numboard UI */
+function startNumboardRound() {
+    numboardDice = [];
+    numboardOperators = [];
+    numboardTarget = Math.floor(Math.random() * 60) + 30;
+
+    gamePhase = "setup";
+    renderNumboard();
+}
+
+function beginThinking() {
+    gamePhase = "thinking";
+    renderNumboard();
+
+    startPhaseTimer(60, lockNumboard);
+}
+
+function lockNumboard() {
+    gamePhase = "locked";
+    renderNumboard();
+
+    setTimeout(revealNumboard, 2000);
+}
+
+function revealNumboard() {
+    gamePhase = "reveal";
+    renderNumboard();
+}
+
+/* ---------- Render UI ---------- */
+
 function renderNumboard() {
     let equationHTML = "";
 
-<button onclick="addNumboardDie(6)">🎲 Roll First Die</button>
-  
     for (let i = 0; i < numboardDice.length; i++) {
         equationHTML += `<span class="num">${numboardDice[i]}</span>`;
 
         if (i < numboardOperators.length) {
             const op = numboardOperators[i] ?? "?";
             equationHTML += `
-                <span class="op" onclick="cycleOperator(${i})">
+                <span class="op ${gamePhase !== "thinking" ? "locked" : ""}"
+                      onclick="cycleOperator(${i})">
                     ${op}
                 </span>
             `;
         }
     }
 
+    let controls = "";
+
+    if (gamePhase === "setup") {
+        controls = `
+            <button onclick="addNumboardDie(6)">🎲 Roll First Die</button>
+            <button onclick="beginThinking()">▶ Start Round</button>
+        `;
+    }
+
+    if (gamePhase === "thinking") {
+        controls = `
+            <div id="timer"></div>
+            <button onclick="addNumboardDie(6)">➕ d6</button>
+            <button onclick="addNumboardDie(4)">➕ d4</button>
+            <button onclick="removeNumboardDie()">➖ Remove</button>
+        `;
+    }
+
+    if (gamePhase === "locked") {
+        controls = `<p>🔒 Pens down!</p>`;
+    }
+
+    if (gamePhase === "reveal") {
+        const result = evaluateNumboard();
+        controls = `
+            <h3>🎉 Result: ${result ?? "Invalid"}</h3>
+            <p>🎯 Target: ${numboardTarget}</p>
+            <button onclick="startNumboardRound()">🔁 Next Round</button>
+        `;
+    }
+
     document.getElementById("output").innerHTML = `
         <h3>🧩 Numboard</h3>
+        <p>🎯 Target: <strong>${numboardTarget}</strong></p>
 
         <div class="equation">
-            ${equationHTML || "Add dice to begin"}
+            ${equationHTML || "Waiting to start"}
         </div>
 
-        <button onclick="addNumboardDie(6)">➕ Add d6</button>
-        <button onclick="addNumboardDie(4)">➕ Add d4</button>
-        <button onclick="removeNumboardDie()">➖ Remove Die</button>
-
-        <p>🎯 Target: <strong>${numboardTarget}</strong></p>
-        <p>Tap operators to change them</p>
+        ${controls}
     `;
 }
 
-/* Add die */
+/* ---------- Interaction ---------- */
+
 function addNumboardDie(sides) {
+    if (gamePhase !== "setup" && gamePhase !== "thinking") return;
     if (numboardDice.length >= 6) return;
 
     numboardDice.push(rollDie(sides));
 
-    // add empty operator slot if needed
     if (numboardDice.length > 1) {
         numboardOperators.push(null);
     }
@@ -176,17 +256,18 @@ function addNumboardDie(sides) {
     renderNumboard();
 }
 
-/* Remove die */
 function removeNumboardDie() {
+    if (gamePhase !== "thinking") return;
     if (numboardDice.length === 0) return;
 
     numboardDice.pop();
-    numboardOperators.pop(); // safe even if empty
-
+    numboardOperators.pop();
     renderNumboard();
 }
 
 function cycleOperator(index) {
+    if (gamePhase !== "thinking") return;
+
     const current = numboardOperators[index];
     const nextIndex = current
         ? (AVAILABLE_OPERATORS.indexOf(current) + 1) % AVAILABLE_OPERATORS.length
@@ -196,6 +277,8 @@ function cycleOperator(index) {
     renderNumboard();
 }
 
+/* ---------- Evaluation ---------- */
+
 function evaluateNumboard() {
     if (numboardOperators.includes(null)) return null;
 
@@ -204,10 +287,9 @@ function evaluateNumboard() {
     for (let i = 0; i < numboardDice.length; i++) {
         expr += numboardDice[i];
         if (i < numboardOperators.length) {
-expr += numboardOperators[i]
-    .replace("×", "*")
-    .replace("÷", "/")
-    .replace("-", "-");
+            expr += numboardOperators[i]
+                .replace("×", "*")
+                .replace("÷", "/");
         }
     }
 
@@ -217,7 +299,6 @@ expr += numboardOperators[i]
         return null;
     }
 }
-
 /* =========================================================
    COUNT-DICE MODE
 ========================================================= */
@@ -297,6 +378,7 @@ function startCountdown() {
         }
     }, 1000);
 }
+
 
 
 
