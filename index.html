@@ -33,30 +33,41 @@
 
 <div id="controls">
     <button onclick="doRoll()">Roll Dice</button>
-	<label id="sp-toggle-wrap" hidden>
-  	<input type="checkbox" id="sp-toggle">
-  	Single Player
-	</label>
+
+    <!-- Single Player Toggle -->
+    <label id="sp-toggle-wrap" hidden>
+        <input type="checkbox" id="sp-toggle">
+        Single Player
+    </label>
+
+    <!-- Difficulty -->
+    <select id="sp-difficulty" hidden>
+        <option value="easy">Easy</option>
+        <option value="hard">Hard</option>
+    </select>
 </div>
 
 <div id="output"></div>
+<!-- Single Player UI -->
+<div id="sp-ui" hidden>
+    <div id="timer"></div>
 
-	<div id="sp-ui" hidden>
-    	<div id="timer"></div>
-    	<h3 id="sp-question"></h3>
-		<div id="sp-combo" hidden></div>
+    <div id="sp-question" class="sp-question"></div>
 
-    	<input
-        	id="sp-input"
-        	type="number"
-        	placeholder="Enter answer"
-        	autocomplete="off"
-    	/>
+    <div id="sp-combo" hidden></div>
 
-    	<button id="sp-submit">Submit</button>
+    <input
+        id="sp-input"
+        type="number"
+        placeholder="Enter answer"
+        autocomplete="off"
+    >
+
+    <button id="sp-submit">Submit</button>
+
+    
 </div>
-
-    <script src="app.js"></script>
+    <script src="app.js" defer></script>
 
     <script>
         if ("serviceWorker" in navigator) {
@@ -64,7 +75,4 @@
         }
     </script>
 </body>
-
-
-
 </html>
