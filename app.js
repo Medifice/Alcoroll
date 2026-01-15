@@ -14,7 +14,7 @@
 let normalSinglePlayer = false;
 let spLevel = 1;
 let spCorrectAnswer = null;
-
+let spCombo = 0;
 let currentMode = null;
 let gamePhase = "idle";
 let roundTimer = null;
@@ -169,8 +169,12 @@ function playNormalGame() {
 
 function startNormalSinglePlayer() {
     spLevel = 1;
+    spCombo = 0;
+
     document.getElementById("output").innerHTML = "";
     document.getElementById("sp-ui").hidden = false;
+
+    updateComboGlow();
     nextSPQuestion();
 }
 
@@ -449,25 +453,61 @@ document.getElementById("sp-input").addEventListener("keydown", e => {
     if (e.key === "Enter") submitSPAnswer();
 });
 
+function breakCombo() {
+    spCombo = 0;
+    updateComboGlow();
+}
+
 function submitSPAnswer() {
     const val = Number(document.getElementById("sp-input").value);
     const ui = document.getElementById("sp-ui");
 
-if (val === spCorrectAnswer) {
-    ui.classList.add("sp-correct");
-    setTimeout(() => ui.classList.remove("sp-correct"), 300);
-    spLevel++;
-    nextSPQuestion();
-} else {
-    ui.classList.add("sp-wrong");
-    setTimeout(() => ui.classList.remove("sp-wrong"), 300);
-    endSinglePlayer();
+    if (val === spCorrectAnswer) {
+        spCombo++;
+        updateComboGlow();
+
+        ui.classList.add("sp-correct");
+        setTimeout(() => ui.classList.remove("sp-correct"), 250);
+
+        spLevel++;
+        nextSPQuestion();
+    } else {
+        breakCombo();
+        endSinglePlayer();
+    }
 }
+
+function updateComboGlow() {
+    const ui = document.getElementById("sp-ui");
+	const comboText = document.getElementById("sp-combo");
+
+	if (spCombo >= 2) {
+    	comboText.hidden = false;
+    	comboText.textContent = `🔥 COMBO x${spCombo}`;
+	} else {
+    	comboText.hidden = true;
+	}
+    ui.classList.remove(
+        "combo-0",
+        "combo-1",
+        "combo-3",
+        "combo-6",
+        "combo-10"
+    );
+
+    if (spCombo >= 10) ui.classList.add("combo-10");
+    else if (spCombo >= 6) ui.classList.add("combo-6");
+    else if (spCombo >= 3) ui.classList.add("combo-3");
+    else if (spCombo >= 1) ui.classList.add("combo-1");
+    else ui.classList.add("combo-0");
 }
 
 function endSinglePlayer() {
     clearInterval(roundTimer);
-    alert(`Game Over!\nYou reached Level ${spLevel}`);
+    breakCombo();
+
+    alert(`Game Over!\nLevel reached: ${spLevel}`);
+
     stopNormalSinglePlayer();
     document.getElementById("sp-toggle").checked = false;
 }
