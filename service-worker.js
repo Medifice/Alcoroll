@@ -1,4 +1,4 @@
-const CACHE_NAME = "Alcoroll";
+const CACHE_NAME = "Alcorollv3";
 const ASSETS = [
   "./",
   "./index.html",
@@ -20,3 +20,4 @@ self.addEventListener("fetch", event => {
     })
   );
 });
+
