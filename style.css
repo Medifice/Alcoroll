@@ -185,6 +185,115 @@ hr {
 }
 
 
+#sp-ui {
+    margin: 1.5rem auto;
+    padding: 1.25rem;
+    max-width: 420px;
+
+    background: linear-gradient(180deg, #2a2a2a, #1f1f1f);
+    border-radius: 14px;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+
+    text-align: center;
+}
+
+#timer {
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin-bottom: 0.75rem;
+
+    color: #ffd166;
+    letter-spacing: 0.05em;
+}
+
+#timer:contains("⏱ 3") {
+    color: #ff6b6b;
+}
+
+#sp-input {
+    width: 100%;
+    padding: 0.75rem;
+
+    font-size: 1.4rem;
+    text-align: center;
+
+    border-radius: 10px;
+    border: 2px solid #444;
+    background: #111;
+    color: #fff;
+
+    outline: none;
+    margin-bottom: 0.75rem;
+}
+
+#sp-input:focus {
+    border-color: #ffd166;
+    box-shadow: 0 0 0 2px rgba(255, 209, 102, 0.3);
+}
+
+#sp-submit {
+    width: 100%;
+    padding: 0.75rem;
+
+    font-size: 1.1rem;
+    font-weight: bold;
+
+    border-radius: 10px;
+    border: none;
+
+    background: linear-gradient(180deg, #ffd166, #fca311);
+    color: #000;
+
+    cursor: pointer;
+    transition: transform 0.1s ease, box-shadow 0.1s ease;
+}
+
+#sp-submit:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.4);
+}
+
+#sp-submit:active {
+    transform: translateY(0);
+    box-shadow: none;
+}
+
+#sp-toggle-wrap {
+    margin-left: 1rem;
+    font-size: 0.9rem;
+    opacity: 0.85;
+}
+
+#sp-toggle-wrap input {
+    margin-right: 0.3rem;
+    transform: scale(1.1);
+}
+
+#sp-toggle:checked + span {
+    color: #ffd166;
+}
+
+.sp-correct {
+    animation: flashGreen 0.3s ease;
+}
+
+.sp-wrong {
+    animation: flashRed 0.3s ease;
+}
+
+@keyframes flashGreen {
+    0% { background: #1f1f1f; }
+    50% { background: #2ecc71; }
+    100% { background: #1f1f1f; }
+}
+
+@keyframes flashRed {
+    0% { background: #1f1f1f; }
+    50% { background: #e74c3c; }
+    100% { background: #1f1f1f; }
+}
+
+
 /* ------------------
    Emphasis
 ------------------- */
@@ -192,4 +301,3 @@ hr {
 strong {
     color: #ffcc80;
 }
-
