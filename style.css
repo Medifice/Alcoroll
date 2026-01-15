@@ -292,7 +292,62 @@ hr {
     50% { background: #e74c3c; }
     100% { background: #1f1f1f; }
 }
+/* ===============================
+   COMBO STREAK GLOW
+================================ */
 
+#sp-ui {
+    position: relative;
+    transition: box-shadow 0.25s ease, transform 0.25s ease;
+}
+
+/* Base (no combo) */
+.combo-0 {
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+}
+
+/* Small streak */
+.combo-1 {
+    box-shadow:
+        0 0 12px rgba(255, 209, 102, 0.4),
+        0 12px 30px rgba(0, 0, 0, 0.4);
+}
+
+/* Medium streak */
+.combo-3 {
+    box-shadow:
+        0 0 18px rgba(255, 180, 80, 0.6),
+        0 0 40px rgba(255, 180, 80, 0.3),
+        0 12px 30px rgba(0, 0, 0, 0.4);
+}
+
+/* High streak */
+.combo-6 {
+    box-shadow:
+        0 0 25px rgba(255, 120, 80, 0.8),
+        0 0 60px rgba(255, 120, 80, 0.5),
+        0 12px 30px rgba(0, 0, 0, 0.4);
+
+    transform: scale(1.01);
+}
+
+/* Insane streak */
+.combo-10 {
+    box-shadow:
+        0 0 35px rgba(255, 60, 60, 0.9),
+        0 0 90px rgba(255, 60, 60, 0.6),
+        0 12px 30px rgba(0, 0, 0, 0.4);
+
+    transform: scale(1.02);
+}
+
+#sp-combo {
+    font-size: 0.85rem;
+    letter-spacing: 0.1em;
+    margin-bottom: 0.25rem;
+    color: #ffd166;
+    opacity: 0.85;
+}
 
 /* ------------------
    Emphasis
