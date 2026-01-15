@@ -19,12 +19,36 @@ let currentMode = null;
 let gamePhase = "idle";
 let roundTimer = null;
 let timeLeft = 0;
+let spQuestionStartTime = 0;
+
 
 let roomCode = generateRoomCode();
+
+let spDifficulty = "easy";
+
+const SP_DIFFICULTY = {
+    easy: {
+        baseTime: 14,
+        minTime: 7,
+        numberScale: 1,
+        comboBonus: 0
+    },
+    hard: {
+        baseTime: 10,
+        minTime: 4,
+        numberScale: 1.6,
+        comboBonus: 1
+    }
+};
 
 /* =========================================================
    UTILITIES
 ========================================================= */
+
+function hideIfExists(id) {
+    const el = document.getElementById(id);
+    if (el) el.hidden = true;
+}
 
 function generateRoomCode() {
     return Math.random().toString(36).substring(2, 6).toUpperCase();
@@ -54,10 +78,11 @@ function roll4d6() {
 function setMode(mode) {
     currentMode = mode;
     clearInterval(roundTimer);
-	
-	document.getElementById("sp-toggle-wrap").hidden = true;
-	document.getElementById("sp-ui").hidden = true;
-	normalSinglePlayer = false;
+	hideIfExists("sp-toggle-wrap");
+    hideIfExists("sp-ui");
+    hideIfExists("sp-difficulty");
+
+normalSinglePlayer = false;
     document.getElementById("instructions").innerHTML = "";
     document.getElementById("output").innerHTML = "";
 
@@ -137,10 +162,20 @@ function renderNormalIntro() {
 
     const toggleWrap = document.getElementById("sp-toggle-wrap");
     const toggle = document.getElementById("sp-toggle");
+    const difficulty = document.getElementById("sp-difficulty");
 
     toggleWrap.hidden = false;
+    difficulty.hidden = false;
+
     toggle.checked = false;
     normalSinglePlayer = false;
+
+    difficulty.value = "easy";
+    spDifficulty = "easy";
+
+    difficulty.onchange = () => {
+        spDifficulty = difficulty.value;
+    };
 
     toggle.onchange = () => {
         normalSinglePlayer = toggle.checked;
@@ -173,6 +208,8 @@ function startNormalSinglePlayer() {
 
     document.getElementById("output").innerHTML = "";
     document.getElementById("sp-ui").hidden = false;
+
+    document.body.classList.toggle("hard-mode", spDifficulty === "hard");
 
     updateComboGlow();
     nextSPQuestion();
@@ -389,35 +426,42 @@ function nextSPQuestion() {
     document.getElementById("sp-question").textContent = q.text;
     document.getElementById("sp-input").value = "";
 
-    startPhaseTimer(
-        Math.max(5, 12 - Math.floor(spLevel / 2)),
-        endSinglePlayer
+    spQuestionStartTime = Date.now(); // ⏱ start timing here
+
+    const cfg = SP_DIFFICULTY[spDifficulty];
+    const time = Math.max(
+        cfg.minTime,
+        cfg.baseTime - Math.floor(spLevel / 2)
     );
+
+    startPhaseTimer(time, endSinglePlayer);
 }
 
 function generateSPQuestion(level) {
+    const scale = SP_DIFFICULTY[spDifficulty].numberScale;
+
     let a, b, text, answer;
 
     if (level < 3) {
-        a = rollDie(10);
-        b = rollDie(10);
+        a = Math.ceil(rollDie(10) * scale);
+        b = Math.ceil(rollDie(10) * scale);
         answer = a + b;
         text = `${a} + ${b}`;
 
     } else if (level < 6) {
-        a = rollDie(20);
-        b = rollDie(10);
+        a = Math.ceil(rollDie(20) * scale);
+        b = Math.ceil(rollDie(10) * scale);
         answer = a - b;
         text = `${a} − ${b}`;
 
     } else if (level < 9) {
-        a = rollDie(6 + level);
-        b = rollDie(6 + level);
+        a = Math.ceil(rollDie(6 + level) * scale);
+        b = Math.ceil(rollDie(6 + level) * scale);
         answer = a * b;
         text = `${a} × ${b}`;
 
     } else {
-        b = rollDie(9) + 1;
+        b = Math.ceil((rollDie(9) + 1) * scale);
         answer = rollDie(10);
         a = answer * b;
         text = `${a} ÷ ${b}`;
@@ -447,10 +491,17 @@ function evaluateNumboard() {
     }
 }
 
-document.getElementById("sp-submit").onclick = submitSPAnswer;
+document.addEventListener("DOMContentLoaded", () => {
+    const submitBtn = document.getElementById("sp-submit");
+    const input = document.getElementById("sp-input");
 
-document.getElementById("sp-input").addEventListener("keydown", e => {
-    if (e.key === "Enter") submitSPAnswer();
+    if (submitBtn) submitBtn.onclick = submitSPAnswer;
+
+    if (input) {
+        input.addEventListener("keydown", e => {
+            if (e.key === "Enter") submitSPAnswer();
+        });
+    }
 });
 
 function breakCombo() {
@@ -463,11 +514,18 @@ function submitSPAnswer() {
     const ui = document.getElementById("sp-ui");
 
     if (val === spCorrectAnswer) {
-        spCombo++;
-        updateComboGlow();
+        const responseTime =
+            (Date.now() - spQuestionStartTime) / 1000;
 
-        ui.classList.add("sp-correct");
-        setTimeout(() => ui.classList.remove("sp-correct"), 250);
+        // Combo only if answered fast enough
+        if (responseTime <= 3) {
+            spCombo += 1 + SP_DIFFICULTY[spDifficulty].comboBonus;
+        } else {
+            spCombo = 1; // correct, but slow
+        }
+
+        updateComboGlow();
+        flashCorrectUI();
 
         spLevel++;
         nextSPQuestion();
@@ -500,6 +558,15 @@ function updateComboGlow() {
     else if (spCombo >= 3) ui.classList.add("combo-3");
     else if (spCombo >= 1) ui.classList.add("combo-1");
     else ui.classList.add("combo-0");
+}
+
+function flashCorrectUI() {
+    const ui = document.getElementById("sp-ui");
+    if (!ui) return;
+
+    ui.classList.remove("sp-correct", "shake");
+    void ui.offsetWidth; // force reflow
+    ui.classList.add("sp-correct", "shake");
 }
 
 function endSinglePlayer() {
