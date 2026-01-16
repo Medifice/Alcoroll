@@ -78,11 +78,15 @@ function roll4d6() {
 function setMode(mode) {
     currentMode = mode;
     clearInterval(roundTimer);
-	hideIfExists("sp-toggle-wrap");
-    hideIfExists("sp-ui");
-    hideIfExists("sp-difficulty");
 
-normalSinglePlayer = false;
+    hideIfExists("sp-ui");
+
+    if (mode !== "normal") {
+        hideIfExists("sp-toggle-wrap");
+        hideIfExists("sp-difficulty");
+    }
+
+    normalSinglePlayer = false;
     document.getElementById("instructions").innerHTML = "";
     document.getElementById("output").innerHTML = "";
 
@@ -578,3 +582,4 @@ function endSinglePlayer() {
     stopNormalSinglePlayer();
     document.getElementById("sp-toggle").checked = false;
 }
+
