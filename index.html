@@ -20,11 +20,27 @@
 
     <h1>🍻 Alcoroll</h1>
 
-<div id="mode-select">
-    <button onclick="setMode('normal')">Normal Game</button>
-    <button onclick="setMode('count')">Count-Dice</button>
-</div>
+<div id="mode-select" class="mode-grid">
+    <div class="mode-card" onclick="setMode('normal')">
+        <h2>🎲 Normal</h2>
+        <p>Party mode</p>
+    </div>
 
+    <div class="mode-card" onclick="startSinglePlayer('easy')">
+        <h2>🧠 Solo (Easy)</h2>
+        <p>Timed · Growing difficulty</p>
+    </div>
+
+    <div class="mode-card hard" onclick="startSinglePlayer('hard')">
+        <h2>🔥 Solo (Hard)</h2>
+        <p>Faster · Bigger numbers</p>
+    </div>
+
+    <div class="mode-card" onclick="setMode('count')">
+        <h2>🧮 Count-Dice</h2>
+        <p>Closest wins</p>
+    </div>
+</div>
 <hr>
 
 <div id="instructions">
@@ -33,41 +49,29 @@
 
 <div id="controls">
     <button onclick="doRoll()">Roll Dice</button>
-
-    <!-- Single Player Toggle -->
-    <label id="sp-toggle-wrap" hidden>
-        <input type="checkbox" id="sp-toggle">
-        Single Player
-    </label>
-
-    <!-- Difficulty -->
-    <select id="sp-difficulty" hidden>
-        <option value="easy">Easy</option>
-        <option value="hard">Hard</option>
-    </select>
 </div>
 
 <div id="output"></div>
-<!-- Single Player UI -->
-<div id="sp-ui" hidden>
-    <div id="timer"></div>
+<div id="solo-container" hidden>
+    <div id="sp-ui">
+        <div id="timer"></div>
+        <div id="sp-question" class="sp-question"></div>
+        <div id="sp-combo" hidden></div>
 
-    <div id="sp-question" class="sp-question"></div>
+        <input
+            id="sp-input"
+            type="number"
+            placeholder="Enter answer"
+            autocomplete="off"
+        >
 
-    <div id="sp-combo" hidden></div>
-
-    <input
-        id="sp-input"
-        type="number"
-        placeholder="Enter answer"
-        autocomplete="off"
-    >
-
-    <button id="sp-submit">Submit</button>
-
-    
+        <button id="sp-submit">Submit</button>
+        <button id="exit-solo" class="secondary">Exit Solo</button>
+    </div>
 </div>
-    <script src="app.js" defer></script>
+</div>
+
+    <script src="app.js"></script>
 
     <script>
         if ("serviceWorker" in navigator) {
@@ -75,4 +79,7 @@
         }
     </script>
 </body>
+
+
+
 </html>
