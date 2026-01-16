@@ -19,36 +19,14 @@ let currentMode = null;
 let gamePhase = "idle";
 let roundTimer = null;
 let timeLeft = 0;
-let spQuestionStartTime = 0;
-
-
-let roomCode = generateRoomCode();
-
+let singlePlayer = false;
 let spDifficulty = "easy";
 
-const SP_DIFFICULTY = {
-    easy: {
-        baseTime: 14,
-        minTime: 7,
-        numberScale: 1,
-        comboBonus: 0
-    },
-    hard: {
-        baseTime: 10,
-        minTime: 4,
-        numberScale: 1.6,
-        comboBonus: 1
-    }
-};
+let roomCode = generateRoomCode();
 
 /* =========================================================
    UTILITIES
 ========================================================= */
-
-function hideIfExists(id) {
-    const el = document.getElementById(id);
-    if (el) el.hidden = true;
-}
 
 function generateRoomCode() {
     return Math.random().toString(36).substring(2, 6).toUpperCase();
@@ -77,31 +55,30 @@ function roll4d6() {
 
 function setMode(mode) {
     currentMode = mode;
+    singlePlayer = false;
+
     clearInterval(roundTimer);
 
-    hideIfExists("sp-ui");
-
-    if (mode !== "normal") {
-        hideIfExists("sp-toggle-wrap");
-        hideIfExists("sp-difficulty");
-    }
-
-    normalSinglePlayer = false;
     document.getElementById("instructions").innerHTML = "";
     document.getElementById("output").innerHTML = "";
 
+    // Hide Roll Dice button by default
+    document.getElementById("controls").hidden = true;
+
     if (mode === "normal") {
+        document.getElementById("controls").hidden = false;
         renderNormalIntro();
     }
 
-    if (mode === "count") {
-        resetCountDice();
-        renderCountIntro();
+    if (mode === "single") {
+        singlePlayer = true;
+        startNormalSinglePlayer();
     }
 
-    if (mode === "numboard") {
-        renderNumboardIntro();
-        startNumboardRound();
+    if (mode === "count") {
+        document.getElementById("controls").hidden = false;
+        resetCountDice();
+        renderCountIntro();
     }
 }
 
@@ -144,7 +121,6 @@ function doRoll() {
     }
 
     if (currentMode === "normal") {
-        if (normalSinglePlayer) return;
         playNormalGame();
     }
 
@@ -166,20 +142,10 @@ function renderNormalIntro() {
 
     const toggleWrap = document.getElementById("sp-toggle-wrap");
     const toggle = document.getElementById("sp-toggle");
-    const difficulty = document.getElementById("sp-difficulty");
 
     toggleWrap.hidden = false;
-    difficulty.hidden = false;
-
     toggle.checked = false;
     normalSinglePlayer = false;
-
-    difficulty.value = "easy";
-    spDifficulty = "easy";
-
-    difficulty.onchange = () => {
-        spDifficulty = difficulty.value;
-    };
 
     toggle.onchange = () => {
         normalSinglePlayer = toggle.checked;
@@ -189,6 +155,12 @@ function renderNormalIntro() {
 }
 
 function playNormalGame() {
+	
+	if (singlePlayer) {
+    startSinglePlayerRound();
+    return;
+}
+	
     const a = roll4d6();
     const b = rollDie(4);
     const c = roll4d6();
@@ -202,8 +174,37 @@ function playNormalGame() {
         <p>1d4 = ${b}</p>
         <p>${c.join(" + ")} = ${totalC}</p>
         <h3>🧠 Solve:</h3>
-        <p>(${totalA} + ${totalC}) × ${b}</p>
+        <p>(${totalA} + ${totalC}) × ${b}</p	
     `;
+	
+	
+}
+
+function startSinglePlayerRound() {
+    const difficultyScale = spDifficulty === "hard" ? 1.6 : 1;
+
+    const a = roll4d6();
+    const b = rollDie(4);
+    const c = roll4d6();
+
+    const totalA = a.reduce((x, y) => x + y, 0);
+    const totalC = c.reduce((x, y) => x + y, 0);
+
+    currentAnswer = Math.round((totalA + totalC) * b * difficultyScale);
+
+    document.getElementById("output").innerHTML = `
+        <h2>🧠 Solve</h2>
+        <p>(${totalA} + ${totalC}) × ${b}</p>
+        <input id="sp-answer" type="number" placeholder="Answer">
+        <button onclick="submitSPAnswer()">Submit</button>
+        <div id="sp-timer"></div>
+        <div id="combo"></div>
+    `;
+
+    startPhaseTimer(
+        spDifficulty === "hard" ? 6 : 10,
+        () => endSinglePlayerRound(false)
+    );
 }
 
 function startNormalSinglePlayer() {
@@ -212,8 +213,6 @@ function startNormalSinglePlayer() {
 
     document.getElementById("output").innerHTML = "";
     document.getElementById("sp-ui").hidden = false;
-
-    document.body.classList.toggle("hard-mode", spDifficulty === "hard");
 
     updateComboGlow();
     nextSPQuestion();
@@ -430,42 +429,35 @@ function nextSPQuestion() {
     document.getElementById("sp-question").textContent = q.text;
     document.getElementById("sp-input").value = "";
 
-    spQuestionStartTime = Date.now(); // ⏱ start timing here
-
-    const cfg = SP_DIFFICULTY[spDifficulty];
-    const time = Math.max(
-        cfg.minTime,
-        cfg.baseTime - Math.floor(spLevel / 2)
+    startPhaseTimer(
+        Math.max(5, 12 - Math.floor(spLevel / 2)),
+        endSinglePlayer
     );
-
-    startPhaseTimer(time, endSinglePlayer);
 }
 
 function generateSPQuestion(level) {
-    const scale = SP_DIFFICULTY[spDifficulty].numberScale;
-
     let a, b, text, answer;
 
     if (level < 3) {
-        a = Math.ceil(rollDie(10) * scale);
-        b = Math.ceil(rollDie(10) * scale);
+        a = rollDie(10);
+        b = rollDie(10);
         answer = a + b;
         text = `${a} + ${b}`;
 
     } else if (level < 6) {
-        a = Math.ceil(rollDie(20) * scale);
-        b = Math.ceil(rollDie(10) * scale);
+        a = rollDie(20);
+        b = rollDie(10);
         answer = a - b;
         text = `${a} − ${b}`;
 
     } else if (level < 9) {
-        a = Math.ceil(rollDie(6 + level) * scale);
-        b = Math.ceil(rollDie(6 + level) * scale);
+        a = rollDie(6 + level);
+        b = rollDie(6 + level);
         answer = a * b;
         text = `${a} × ${b}`;
 
     } else {
-        b = Math.ceil((rollDie(9) + 1) * scale);
+        b = rollDie(9) + 1;
         answer = rollDie(10);
         a = answer * b;
         text = `${a} ÷ ${b}`;
@@ -495,17 +487,10 @@ function evaluateNumboard() {
     }
 }
 
-document.addEventListener("DOMContentLoaded", () => {
-    const submitBtn = document.getElementById("sp-submit");
-    const input = document.getElementById("sp-input");
+document.getElementById("sp-submit").onclick = submitSPAnswer;
 
-    if (submitBtn) submitBtn.onclick = submitSPAnswer;
-
-    if (input) {
-        input.addEventListener("keydown", e => {
-            if (e.key === "Enter") submitSPAnswer();
-        });
-    }
+document.getElementById("sp-input").addEventListener("keydown", e => {
+    if (e.key === "Enter") submitSPAnswer();
 });
 
 function breakCombo() {
@@ -518,18 +503,11 @@ function submitSPAnswer() {
     const ui = document.getElementById("sp-ui");
 
     if (val === spCorrectAnswer) {
-        const responseTime =
-            (Date.now() - spQuestionStartTime) / 1000;
-
-        // Combo only if answered fast enough
-        if (responseTime <= 3) {
-            spCombo += 1 + SP_DIFFICULTY[spDifficulty].comboBonus;
-        } else {
-            spCombo = 1; // correct, but slow
-        }
-
+        spCombo++;
         updateComboGlow();
-        flashCorrectUI();
+
+        ui.classList.add("sp-correct");
+        setTimeout(() => ui.classList.remove("sp-correct"), 250);
 
         spLevel++;
         nextSPQuestion();
@@ -564,14 +542,37 @@ function updateComboGlow() {
     else ui.classList.add("combo-0");
 }
 
-function flashCorrectUI() {
-    const ui = document.getElementById("sp-ui");
-    if (!ui) return;
+function startSinglePlayer(difficulty) {
+    singlePlayer = true;
+    spDifficulty = difficulty;
 
-    ui.classList.remove("sp-correct", "shake");
-    void ui.offsetWidth; // force reflow
-    ui.classList.add("sp-correct", "shake");
+    lockToSoloUI();
+    startNormalSinglePlayer();
 }
+
+function lockToSoloUI() {
+    document.getElementById("mode-select").hidden = true;
+    document.getElementById("controls").hidden = true;
+    document.getElementById("instructions").hidden = true;
+    document.getElementById("output").hidden = true;
+
+    document.getElementById("solo-container").hidden = false;
+}
+
+function unlockFromSoloUI() {
+    document.getElementById("mode-select").hidden = false;
+    document.getElementById("controls").hidden = false;
+    document.getElementById("instructions").hidden = false;
+    document.getElementById("output").hidden = false;
+
+    document.getElementById("solo-container").hidden = true;
+}
+
+document.getElementById("exit-solo").onclick = () => {
+    clearInterval(roundTimer);
+    breakCombo();
+    unlockFromSoloUI();
+};
 
 function endSinglePlayer() {
     clearInterval(roundTimer);
@@ -580,6 +581,5 @@ function endSinglePlayer() {
     alert(`Game Over!\nLevel reached: ${spLevel}`);
 
     stopNormalSinglePlayer();
-    document.getElementById("sp-toggle").checked = false;
+    unlockFromSoloUI();
 }
-
